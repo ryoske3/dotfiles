@@ -168,23 +168,35 @@ set backspace=indent,eol,start
 
 
 " dein.vim settings {{{
-" install dir {{{
-let s:dein_dir = expand('~/.cache/dein')
-let s:dein_repo_dir = s:dein_dir . '/repos/github.com/Shougo/dein.vim'
-" }}}
+
+" install dir
+" (dein.vimのインストールディレクトリの設定)
+let s:dein_dir = expand('~/.cache/dein') 
+let s:dein_repo_dir = s:dein_dir . '/repos/github.com/Shougo/dein.vim' 
+
+" s:dein_dir: 
+" - dein.vimのキャッシュディレクトリを設定（`~/.cache/dein`）
+" - dein.vimを通じてインストールされるすべてのVimプラグイン・ロード情報などのキャッシュはこのディレクトリに保存
+
+" s:dein_repo_dir: 
+" - dein.vim自体のリポジトリの場所を指定
 
 
-" dein installation check {{{
-if &runtimepath !~# '/dein.vim'
-  if !isdirectory(s:dein_repo_dir)
+" dein installation check
+" (dein.vimのインストール確認)
+if &runtimepath !~# '/dein.vim' 
+  if !isdirectory(s:dein_repo_dir) 
     execute '!git clone https://github.com/Shougo/dein.vim' s:dein_repo_dir
   endif
   execute 'set runtimepath^=' . s:dein_repo_dir
 endif
-" }}}
+" - もし Vim の runtimepath に dein.vim が含まれていなければ、次にリポジトリディレクトリが存在するかチェックする
+" - 存在しなければ git clone でインストールし、存在するならスキップする。その後、dein.vim のディレクトリを runtimepath に追加する
 
 
-" begin settings {{{
+
+" begin settings - tomlファイル読み込み - end settings
+" (dein.vimの初期化と設定)
 if dein#load_state(s:dein_dir)
   call dein#begin(s:dein_dir)
 
@@ -204,20 +216,35 @@ if dein#load_state(s:dein_dir)
 endif
 " }}}
 
+" 1. 状態をロードする必要があるかチェック
+" 2. 必要があれば設定ブロックを開始
+" 3. `~/.vim`ディレクトリがなければ作成
+" 4. `~/.vim/dein.toml`ファイルからプラグイン設定を読み込み
+" 5. 設定ブロックを終了
+" 6. 状態を保存
 
-" plugin installation check {{{
+
+" plugin installation check
+" (プラグインのインストール確認)
 if dein#check_install()
   call dein#install()
 endif
-" }}}
+
+" - まだインストールされていないプラグインがあれば、インストールを実行
 
 
-" plugin remove check {{{
+" plugin remove check
+" (不要なプラグインの削除確認)
 let s:removed_plugins = dein#check_clean()
 if len(s:removed_plugins) > 0
   call map(s:removed_plugins, "delete(v:val, 'rf')")
   call dein#recache_runtimepath()
 endif
+
+" - 設定から削除されたプラグインをチェック
+" - 削除すべきプラグインがあれば、ファイルシステムから削除
+" - runtimepathを再キャッシュ
+
 " }}}
 
 
@@ -327,11 +354,16 @@ set laststatus=2
 
 
 
+
+
+" defaultの設定を以下に記載しておく
+"\   'left': [ [ 'mode', 'paste' ], [ 'fugitive', 'filename' ] ]
+
 let g:lightline = {
         \ 'colorscheme': 'wombat',
         \ 'mode_map': {'c': 'NORMAL'},
         \ 'active': {
-        \   'left': [ [ 'mode', 'paste' ], [ 'fugitive', 'filename' ] ]
+        \   'left': [ ['konata','mode', 'paste' ], ['readonly','filename','modified' ] ]
         \ },
         \ 'component_function': {
         \   'modified': 'LightlineModified',
@@ -341,9 +373,20 @@ let g:lightline = {
         \   'fileformat': 'LightlineFileformat',
         \   'filetype': 'LightlineFiletype',
         \   'fileencoding': 'LightlineFileencoding',
-        \   'mode': 'LightlineMode'
+        \   'mode': 'LightlineMode',
+        \   'konata':'Lightlinekonata' 
+        \ },
         \ }
-        \ }
+
+function! Lightlinekonata()
+    if winwidth(0) > 70
+        return '(=ω=.)'
+    else
+        return ''
+    endif
+endfunction
+
+
 
 function! LightlineModified()
   return &ft =~ 'help\|vimfiler\|gundo' ? '' : &modified ? '+' : &modifiable ? '' : '-'
